@@ -36,52 +36,78 @@ const UserManagement = () => {
     }
   };
 
+  // Generate initials from name
+  const getInitials = (name) => name ? name.substring(0, 2).toUpperCase() : 'NA';
+
   return (
-    <div className="container mt-4 text-white mb-5">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="text-warning mb-0">👥 Quản Lý Tài Khoản</h2>
-        <Link to="/admin/add-user" className="btn btn-success fw-bold shadow">
+    <div>
+      {/* Page header */}
+      <div className="tp-page-header">
+        <h1 className="tp-page-title">Quản Lý Tài Khoản</h1>
+        <Link to="/admin/add-user" className="btn-primary-tp">
           + Thêm Tài Khoản
         </Link>
       </div>
 
-      <div className="card bg-dark border-secondary shadow">
-        <div className="card-body">
-          <div className="table-responsive">
-            <table className="table table-dark table-hover align-middle text-center">
-              <thead className="table-active">
-                <tr className="text-info">
-                  <th>STT</th>
-                  <th className="text-start">Họ và Tên</th>
-                  <th className="text-start">Email</th>
-                  <th>Vai trò</th>
-                  <th>Hành động</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user, index) => (
-                  <tr key={user._id}>
-                    <td>{index + 1}</td>
-                    <td className="fw-bold text-start">{user.name}</td>
-                    <td className="text-start">{user.email}</td>
-                    <td>
-                      <span className={`badge ${user.role === 'admin' ? 'bg-danger' : 'bg-primary'}`}>
-                        {user.role === 'admin' ? 'Quản trị viên' : 'Khách hàng'}
-                      </span>
-                    </td>
-                    <td>
-                      <Link to={`/admin/edit-user/${user._id}`} className="btn btn-sm btn-warning me-2 text-dark fw-bold">Sửa</Link>
-                      <button onClick={() => handleDelete(user._id, user.name)} className="btn btn-sm btn-danger fw-bold">Xóa</button>
-                    </td>
-                  </tr>
-                ))}
-                {users.length === 0 && (
-                  <tr><td colSpan="5">Chưa có dữ liệu người dùng.</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+      {/* Table */}
+      <div className="tp-table-wrap">
+        <table className="tp-table">
+          <thead>
+            <tr>
+              <th>Người dùng</th>
+              <th>Email</th>
+              <th style={{ textAlign: 'center' }}>Vai trò</th>
+              <th style={{ textAlign: 'center' }}>Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map((user) => (
+              <tr key={user._id}>
+                {/* Avatar + name */}
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div className="user-avatar">{getInitials(user.name)}</div>
+                    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{user.name}</span>
+                  </div>
+                </td>
+                <td style={{ color: 'var(--text-muted)' }}>{user.email}</td>
+                <td style={{ textAlign: 'center' }}>
+                  <span className={user.role === 'admin' ? 'tp-badge tp-badge-danger' : 'tp-badge tp-badge-primary'}>
+                    {user.role === 'admin' ? '👑 Quản trị viên' : '👤 Khách hàng'}
+                  </span>
+                </td>
+                <td style={{ textAlign: 'center' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                    <Link
+                      to={`/admin/edit-user/${user._id}`}
+                      className="btn-accent-tp"
+                      style={{ fontSize: '0.78rem', padding: '0.35rem 0.85rem' }}
+                    >
+                      ✏️ Sửa
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(user._id, user.name)}
+                      className="btn-danger-tp"
+                      style={{ fontSize: '0.78rem', padding: '0.35rem 0.85rem' }}
+                    >
+                      🗑️ Xóa
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {users.length === 0 && (
+              <tr>
+                <td colSpan="4">
+                  <div className="empty-state" style={{ padding: '2rem' }}>
+                    <span className="empty-state-icon">👥</span>
+                    <p className="empty-state-text">Chưa có dữ liệu người dùng.</p>
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

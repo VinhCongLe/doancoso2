@@ -13,12 +13,12 @@ const UserForm = () => {
       axios.get(`http://localhost:5000/api/users/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      .then(res => {
-        const { name, email, role } = res.data.data;
-        // Chú ý: Không set password từ DB về vì nó đã bị mã hóa
-        setFormData({ name, email, password: '', role }); 
-      })
-      .catch(error => console.error("Lỗi lấy thông tin:", error));
+        .then(res => {
+          const { name, email, role } = res.data.data;
+          // Chú ý: Không set password từ DB về vì nó đã bị mã hóa
+          setFormData({ name, email, password: '', role });
+        })
+        .catch(error => console.error("Lỗi lấy thông tin:", error));
     }
   }, [id]);
 
@@ -42,49 +42,90 @@ const UserForm = () => {
   };
 
   return (
-    <div className="container mt-5 text-white">
+    <div>
+      {/* Page header */}
+      <div className="tp-page-header">
+        <h1 className="tp-page-title">
+          {id ? 'Sửa Tài Khoản' : 'Thêm Tài Khoản Mới'}
+        </h1>
+      </div>
+
+      {/* Form card */}
       <div className="row justify-content-center">
-        <div className="col-md-6">
-          <div className="card bg-dark border-secondary shadow p-4">
-            <h3 className="text-center text-warning mb-4">
-              {id ? "Sửa Tài Khoản" : "Thêm Tài Khoản Mới"}
-            </h3>
-            <form onSubmit={handleSubmit}>
-              <div className="mb-3">
-                <label className="text-info">Họ và tên</label>
-                <input type="text" className="form-control bg-dark text-white border-secondary" required
-                  value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
-              </div>
-              
-              <div className="mb-3">
-                <label className="text-info">Email</label>
-                <input type="email" className="form-control bg-dark text-white border-secondary" required
-                  value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
-              </div>
+        <div className="col-lg-6 col-md-8">
+          <div className="tp-card">
+            <div className="tp-card-body">
+              <form onSubmit={handleSubmit}>
+                <div className="tp-form-group">
+                  <label className="tp-label">Họ và tên</label>
+                  <input
+                    type="text"
+                    className="tp-input"
+                    placeholder="Nguyễn Văn A"
+                    required
+                    value={formData.name}
+                    onChange={e => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
 
-              <div className="mb-3">
-                <label className="text-info">
-                  Mật khẩu {id && <small className="text-muted">(Bỏ trống nếu không muốn đổi)</small>}
-                </label>
-                <input type="password" className="form-control bg-dark text-white border-secondary" 
-                  required={!id} // Nếu là Thêm mới thì bắt buộc nhập, nếu Sửa thì không
-                  value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
-              </div>
+                <div className="tp-form-group">
+                  <label className="tp-label">Email</label>
+                  <input
+                    type="email"
+                    className="tp-input"
+                    placeholder="email@example.com"
+                    required
+                    value={formData.email}
+                    onChange={e => setFormData({ ...formData, email: e.target.value })}
+                  />
+                </div>
 
-              <div className="mb-4">
-                <label className="text-info">Phân quyền</label>
-                <select className="form-select bg-dark text-white border-secondary" 
-                  value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})}>
-                  <option value="user">Khách hàng (User)</option>
-                  <option value="admin">Quản trị viên (Admin)</option>
-                </select>
-              </div>
+                <div className="tp-form-group">
+                  <label className="tp-label">
+                    Mật khẩu{' '}
+                    {id && (
+                      <span style={{ fontWeight: 400, color: 'var(--text-disabled)', fontSize: '0.75rem', textTransform: 'none' }}>
+                        (Bỏ trống nếu không muốn đổi)
+                      </span>
+                    )}
+                  </label>
+                  <input
+                    type="password"
+                    className="tp-input"
+                    placeholder="••••••••"
+                    required={!id} // Nếu là Thêm mới thì bắt buộc nhập, nếu Sửa thì không
+                    value={formData.password}
+                    onChange={e => setFormData({ ...formData, password: e.target.value })}
+                  />
+                </div>
 
-              <div className="d-flex gap-2">
-                <button type="submit" className="btn btn-warning w-50 fw-bold">Lưu Thông Tin</button>
-                <button type="button" className="btn btn-outline-light w-50" onClick={() => navigate('/admin/users')}>Hủy</button>
-              </div>
-            </form>
+                <div className="tp-form-group" style={{ marginBottom: '1.5rem' }}>
+                  <label className="tp-label">Phân quyền</label>
+                  <select
+                    className="tp-select"
+                    value={formData.role}
+                    onChange={e => setFormData({ ...formData, role: e.target.value })}
+                  >
+                    <option value="user">👤 Khách hàng (User)</option>
+                    <option value="admin">👑 Quản trị viên (Admin)</option>
+                  </select>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button type="submit" className="btn-primary-tp" style={{ flex: 1, justifyContent: 'center' }}>
+                    💾 Lưu Thông Tin
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-ghost-tp"
+                    style={{ flex: 1, justifyContent: 'center' }}
+                    onClick={() => navigate('/admin/users')}
+                  >
+                    Hủy
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>

@@ -15,10 +15,10 @@ const Dashboard = () => {
         });
         const stats = res.data.data;
         setData(stats);
-        
-        // Tính tổng nhanh để hiện các ô con số
-        const revenue = stats.reduce((sum, item) => sum + item.totalRevenue, 0);
-        const orders = stats.reduce((sum, item) => sum + item.totalTickets, 0);
+
+        // Tính tổng từ dữ liệu trả về (mảng các ngày)
+        const revenue = stats.reduce((sum, item) => sum + (item.totalRevenue || 0), 0);
+        const orders = stats.reduce((sum, item) => sum + (item.totalTickets || 0), 0);
         setSummary({ totalRevenue: revenue, totalOrders: orders });
       } catch (error) {
         console.error("Lỗi lấy thống kê:", error);
@@ -28,57 +28,92 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="container mt-4 text-white mb-5">
-      <h2 className="text-warning mb-4">📊 Thống Kê Doanh Thu</h2>
+    <div>
+      {/* Page header */}
+      <div className="tp-page-header">
+        <h1 className="tp-page-title">Thống Kê Doanh Thu</h1>
+      </div>
 
-      {/* Các thẻ con số tổng quan */}
-      <div className="row mb-5">
+      {/* Stat cards */}
+      <div className="row g-3 mb-4">
         <div className="col-md-6">
-          <div className="card bg-success text-white shadow-sm p-3">
-            <h5>💰 Tổng Doanh Thu (Đã thanh toán)</h5>
-            <h2 className="fw-bold">{summary.totalRevenue.toLocaleString()} VNĐ</h2>
+          <div className="tp-stat-card">
+            <div className="tp-stat-icon tp-stat-icon-green">💰</div>
+            <div>
+              <div className="tp-stat-label">Tổng Doanh Thu (Đã thanh toán)</div>
+              <div className="tp-stat-value" style={{ fontSize: '1.3rem' }}>
+                {summary.totalRevenue.toLocaleString()} <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--success)' }}>VNĐ</span>
+              </div>
+            </div>
           </div>
         </div>
         <div className="col-md-6">
-          <div className="card bg-primary text-white shadow-sm p-3">
-            <h5>🎟️ Tổng Số Vé Đã Bán</h5>
-            <h2 className="fw-bold">{summary.totalOrders} Vé</h2>
+          <div className="tp-stat-card">
+            <div className="tp-stat-icon tp-stat-icon-indigo">🎟️</div>
+            <div>
+              <div className="tp-stat-label">Tổng Số Vé Đã Bán</div>
+              <div className="tp-stat-value">
+                {summary.totalOrders} <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--primary-light)' }}>Vé</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="row">
-        {/* Biểu đồ Cột */}
-        <div className="col-md-6 mb-4">
-          <div className="card bg-dark border-secondary p-3 shadow">
-            <h5 className="text-info mb-4">Doanh thu theo ngày</h5>
-            <div style={{ width: '100%', height: 300 }}>
+      {/* Charts */}
+      <div className="row g-4">
+        {/* Bar Chart */}
+        <div className="col-md-6">
+          <div className="tp-chart-card">
+            <div className="tp-chart-title">📊 Doanh thu theo ngày</div>
+            <div style={{ width: '100%', height: 280 }}>
               <ResponsiveContainer>
                 <BarChart data={data}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                  <XAxis dataKey="_id" stroke="#ccc" />
-                  <YAxis stroke="#ccc" />
-                  <Tooltip contentStyle={{ backgroundColor: '#333', border: 'none' }} />
-                  <Bar dataKey="totalRevenue" fill="#ffc107" radius={[4, 4, 0, 0]} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                  <XAxis dataKey="_id" stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
+                  <YAxis stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
+                  <Tooltip
+                    contentStyle={{
+                      background: 'var(--bg-surface)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '8px',
+                      color: 'var(--text-primary)',
+                    }}
+                  />
+                  <Bar dataKey="totalRevenue" fill="var(--primary)" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
         </div>
 
-        {/* Biểu đồ Đường */}
-        <div className="col-md-6 mb-4">
-          <div className="card bg-dark border-secondary p-3 shadow">
-            <h5 className="text-info mb-4">Số lượng vé bán ra</h5>
-            <div style={{ width: '100%', height: 300 }}>
+        {/* Line Chart */}
+        <div className="col-md-6">
+          <div className="tp-chart-card">
+            <div className="tp-chart-title">📈 Số lượng vé bán ra</div>
+            <div style={{ width: '100%', height: 280 }}>
               <ResponsiveContainer>
                 <LineChart data={data}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                  <XAxis dataKey="_id" stroke="#ccc" />
-                  <YAxis stroke="#ccc" />
-                  <Tooltip contentStyle={{ backgroundColor: '#333', border: 'none' }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                  <XAxis dataKey="_id" stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
+                  <YAxis stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
+                  <Tooltip
+                    contentStyle={{
+                      background: 'var(--bg-surface)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '8px',
+                      color: 'var(--text-primary)',
+                    }}
+                  />
                   <Legend />
-                  <Line type="monotone" dataKey="totalTickets" stroke="#0d6efd" strokeWidth={3} dot={{ r: 6 }} />
+                  <Line
+                    type="monotone"
+                    dataKey="totalTickets"
+                    stroke="var(--accent)"
+                    strokeWidth={3}
+                    dot={{ r: 5, fill: 'var(--accent)', strokeWidth: 0 }}
+                    activeDot={{ r: 7 }}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </div>

@@ -18,33 +18,55 @@ const Register = () => {
   };
 
   return (
-    <div className="container mt-5 text-white">
-      <div className="row justify-content-center">
-        <div className="col-md-5">
-          <div className="card bg-dark border-secondary shadow p-4">
-            <h2 className="text-center mb-4">Tạo Tài Khoản</h2>
-            <form onSubmit={handleSubmit}>
-              <div className="mb-3">
-                <label>Họ và tên</label>
-                <input type="text" className="form-control" required
-                  onChange={e => setFormData({...formData, name: e.target.value})} />
-              </div>
-              <div className="mb-3">
-                <label>Email</label>
-                <input type="email" className="form-control" required
-                  onChange={e => setFormData({...formData, email: e.target.value})} />
-              </div>
-              <div className="mb-3">
-                <label>Mật khẩu</label>
-                <input type="password" className="form-control" required
-                  onChange={e => setFormData({...formData, password: e.target.value})} />
-              </div>
-              <button type="submit" className="btn btn-success w-100 mb-3">Đăng Ký Mới</button>
-              <div className="text-center">
-                Đã có tài khoản? <Link to="/login" className="text-info">Đăng nhập tại đây</Link>
-              </div>
-            </form>
+    <div className="auth-page">
+      <div className="auth-card animate-fade-in">
+        {/* Logo */}
+        <div className="auth-logo">🎫 TICKET PRO</div>
+        <h1 className="auth-title">Tạo tài khoản mới</h1>
+        <p className="auth-subtitle">Tham gia để khám phá các sự kiện hấp dẫn</p>
+
+        <form onSubmit={handleSubmit}>
+          <div className="tp-form-group">
+            <label className="tp-label">Họ và tên</label>
+            <input
+              type="text"
+              className="tp-input"
+              placeholder="Nguyễn Văn A"
+              required
+              onChange={e => setFormData({ ...formData, name: e.target.value })}
+            />
           </div>
+
+          <div className="tp-form-group">
+            <label className="tp-label">Email</label>
+            <input
+              type="email"
+              className="tp-input"
+              placeholder="your@email.com"
+              required
+              onChange={e => setFormData({ ...formData, email: e.target.value })}
+            />
+          </div>
+
+          <div className="tp-form-group">
+            <label className="tp-label">Mật khẩu</label>
+            <input
+              type="password"
+              className="tp-input"
+              placeholder="••••••••"
+              required
+              onChange={e => setFormData({ ...formData, password: e.target.value })}
+            />
+          </div>
+
+          <button type="submit" className="auth-submit-btn">
+            Đăng Ký Ngay →
+          </button>
+        </form>
+
+        <div className="auth-footer">
+          Đã có tài khoản?{' '}
+          <Link to="/login">Đăng nhập tại đây</Link>
         </div>
       </div>
     </div>

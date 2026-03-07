@@ -8,4 +8,8 @@ const TicketSchema = new mongoose.Schema({
   status: { type: String, enum: ['Pending', 'Paid', 'Cancelled'], default: 'Pending' }
 }, { timestamps: true });
 
+// Tối ưu tra cứu vé
+TicketSchema.index({ user: 1 });
+TicketSchema.index({ event: 1 });
+
 module.exports = mongoose.model('Ticket', TicketSchema);

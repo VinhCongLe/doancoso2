@@ -6,11 +6,12 @@ const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
 
   const menuItems = [
-    { path: '/admin/dashboard', icon: '📊', label: 'Dashboard' },
-    { path: '/admin', icon: '📅', label: 'Quản lý sự kiện' },
-    { path: '/admin/tickets', icon: '🎫', label: 'Quản lý vé' },
-    { path: '/admin/users', icon: '👥', label: 'Quản lý user' },
-    { path: '/admin/banners', icon: '🖼️', label: 'Quản lý banner' },
+    { path: '/admin/dashboard', icon: '', label: 'Dashboard' },
+    { path: '/admin', icon: '', label: 'Quản lý sự kiện' },
+    { path: '/admin/tickets', icon: '', label: 'Quản lý vé' },
+    { path: '/admin/users', icon: '', label: 'Quản lý user' },
+    { path: '/admin/categories', icon: '', label: 'Quản lý loại sự kiện' },
+    { path: '/admin/checkin', icon: '', label: 'Quét mã Check-in' },
   ];
 
   const handleLogout = () => {
@@ -20,57 +21,50 @@ const AdminLayout = ({ children }) => {
     window.location.reload();
   };
 
-  return (
-    <div className="d-flex" style={{ minHeight: '100vh', backgroundColor: '#121212' }}>
-      {/* --- SIDEBAR TRÁI --- */}
-      <div className="bg-dark border-end border-secondary shadow" style={{ width: '260px', position: 'sticky', top: 0, height: '100vh' }}>
-        <div className="p-4 border-bottom border-secondary mb-3">
-          <Link to="/" className="text-decoration-none">
-            <h4 className="text-warning fw-bold mb-0">🎫 TICKET PRO</h4>
-            <small className="text-muted">Admin Panel</small>
-          </Link>
-        </div>
+  const isActive = (path) => {
+    // Exact match for /admin, prefix match for others
+    if (path === '/admin') return location.pathname === '/admin';
+    return location.pathname.startsWith(path);
+  };
 
-        <div className="nav flex-column nav-pills px-3 gap-2">
+  return (
+    <div className="tp-admin-layout">
+      {/* ─── SIDEBAR ─── */}
+      <aside className="tp-sidebar">
+        {/* Logo area */}
+        <Link to="/" className="tp-sidebar-brand" style={{ textDecoration: 'none' }}>
+          <span className="tp-sidebar-logo">🎫 TICKET PRO</span>
+          <span className="tp-sidebar-sub">Admin Panel</span>
+        </Link>
+
+        {/* Navigation */}
+        <nav className="tp-sidebar-nav">
+          <span className="tp-sidebar-label">Quản lý</span>
+
           {menuItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}
-              className={`nav-link text-white d-flex align-items-center gap-3 py-3 px-3 rounded-3 transition-all ${
-                location.pathname === item.path ? 'bg-warning text-dark fw-bold shadow' : 'hover-bg-dark'
-              }`}
+              className={`tp-sidebar-item ${isActive(item.path) ? 'active' : ''}`}
             >
-              <span className="fs-5">{item.icon}</span>
+              {item.icon && <span className="tp-sidebar-icon">{item.icon}</span>}
               <span>{item.label}</span>
             </Link>
           ))}
+        </nav>
 
-          <hr className="border-secondary mt-4" />
-          
-          <button 
-            onClick={handleLogout}
-            className="nav-link text-danger d-flex align-items-center gap-3 py-3 px-3 rounded-3 border-0 bg-transparent hover-bg-danger"
-          >
-            <span className="fs-5">🚪</span>
+        {/* Logout at bottom */}
+        <div className="tp-sidebar-logout">
+          <button onClick={handleLogout} className="tp-sidebar-logout-btn">
             <span>Đăng xuất</span>
           </button>
         </div>
-      </div>
+      </aside>
 
-      {/* --- NỘI DUNG BÊN PHẢI --- */}
-      <div className="flex-grow-1 p-4 overflow-auto">
-        <div className="container-fluid">
-          {children}
-        </div>
-      </div>
-
-      <style>{`
-        .hover-bg-dark:hover { background-color: #2c2c2c; }
-        .hover-bg-danger:hover { background-color: rgba(220, 53, 69, 0.1); }
-        .transition-all { transition: all 0.2s ease-in-out; }
-        .nav-link { color: #adb5bd !important; }
-        .nav-link.bg-warning { color: #000 !important; }
-      `}</style>
+      {/* ─── MAIN CONTENT ─── */}
+      <main className="tp-admin-content">
+        {children}
+      </main>
     </div>
   );
 };

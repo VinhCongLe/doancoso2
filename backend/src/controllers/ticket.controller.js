@@ -1,5 +1,6 @@
 const Ticket = require('../models/Ticket');
 const Event = require('../models/Event');
+const Invoice = require('../models/Invoice');
 
 // 1. DÀNH CHO KHÁCH: Đặt vé
 exports.bookTicket = async (req, res) => {
@@ -7,11 +8,11 @@ exports.bookTicket = async (req, res) => {
     const { event, quantity, totalPrice } = req.body;
     const targetEvent = await Event.findById(event);
     if (!targetEvent) return res.status(404).json({ success: false, message: 'Không tìm thấy sự kiện!' });
-    
+
     if (targetEvent.availableTickets < quantity) {
-      return res.status(400).json({ 
-        success: false, 
-        message: `Rất tiếc! Sự kiện này chỉ còn ${targetEvent.availableTickets} vé.` 
+      return res.status(400).json({
+        success: false,
+        message: `Rất tiếc! Sự kiện này chỉ còn ${targetEvent.availableTickets} vé.`
       });
     }
 
@@ -61,8 +62,8 @@ exports.updateTicketStatus = async (req, res) => {
   try {
     const { status } = req.body;
     const updatedTicket = await Ticket.findByIdAndUpdate(
-      req.params.id, 
-      { status }, 
+      req.params.id,
+      { status },
       { new: true }
     );
     if (!updatedTicket) return res.status(404).json({ success: false, message: 'Không tìm thấy vé!' });
@@ -75,8 +76,9 @@ exports.updateTicketStatus = async (req, res) => {
 // 5. DÀNH CHO BIỂU ĐỒ: Thống kê doanh thu (Đã tách ra ngoài)
 exports.getStats = async (req, res) => {
   try {
-    const stats = await Ticket.aggregate([
-      { $match: { status: 'Paid' } },
+    // Thống kê từ bảng Invoice (Chỉ các hóa đơn đã thanh toán thành công)
+    const stats = await Invoice.aggregate([
+      { $match: { status: 'success' } },
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
