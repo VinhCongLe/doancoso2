@@ -8,7 +8,8 @@ const InvoiceSchema = new mongoose.Schema({
     totalPrice: { type: Number, required: true },
     paymentMethod: { type: String, default: "Stripe" },
     status: { type: String, default: "success" },
-    checkedIn: { type: Boolean, default: false }
+    checkedIn: { type: Boolean, default: false },
+    stripeSessionId: { type: String, default: null }
 }, { timestamps: true });
 
 // Tối ưu hiệu năng cho thống kê Dashboard và tra cứu của User

@@ -8,34 +8,13 @@ const EventDetail = () => {
   const navigate = useNavigate();
   const [event, setEvent] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [reservation, setReservation] = useState(null);
-  const [timeLeft, setTimeLeft] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     axios.get(`http://localhost:5000/api/events/${id}`)
       .then(res => setEvent(res.data.data))
       .catch(error => console.error("Lỗi lấy chi tiết sự kiện:", error));
   }, [id]);
-
-  useEffect(() => {
-    if (timeLeft === null) return;
-    if (timeLeft <= 0) {
-      toast.error("Hết thời gian giữ vé. Vui lòng thử lại!");
-      setReservation(null);
-      setTimeLeft(null);
-      axios.get(`http://localhost:5000/api/events/${id}`)
-        .then(res => setEvent(res.data.data));
-      return;
-    }
-    const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
-    return () => clearInterval(timer);
-  }, [timeLeft, id]);
-
-  const formatTime = (s) => {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${m}:${sec.toString().padStart(2, '0')}`;
-  };
 
   const handleBookTicket = async () => {
     const token = localStorage.getItem('token');
@@ -45,32 +24,22 @@ const EventDetail = () => {
       return;
     }
 
+    setLoading(true);
     try {
-      // 1. Giữ vé
-      const resRes = await axios.post('http://localhost:5000/api/payment/reserve',
+      const res = await axios.post(
+        'http://localhost:5000/api/payment/stripe/create-checkout',
         { eventId: id, quantity },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      if (resRes.data.success) {
-        setReservation(resRes.data.reservationId);
-        const diff = Math.floor((new Date(resRes.data.expiresAt) - new Date()) / 1000);
-        setTimeLeft(diff);
-        toast.success(`Đã giữ ${quantity} vé!`);
-
-        // 2. Stripe Checkout
-        const stripeRes = await axios.post('http://localhost:5000/api/payment/stripe/create-checkout',
-          { eventId: id, quantity, reservationId: resRes.data.reservationId },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        if (stripeRes.data.success) {
-          toast.loading("Đang chuyển hướng thanh toán...");
-          setTimeout(() => window.location.href = stripeRes.data.checkoutUrl, 1500);
-        }
+      if (res.data.success && res.data.checkoutUrl) {
+        toast.loading("Đang chuyển hướng sang trang thanh toán...");
+        window.location.href = res.data.checkoutUrl;
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Lỗi khi đặt vé");
+      toast.error(error.response?.data?.message || "Lỗi khi tạo thanh toán. Vui lòng thử lại!");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -201,19 +170,17 @@ const EventDetail = () => {
                   <button className="btn-ghost-tp" style={{ padding: '0.3rem 0.8rem' }} onClick={() => setQuantity(q => Math.min(event.availableTickets, q + 1))} disabled={quantity >= event.availableTickets || event.availableTickets === 0}>+</button>
                 </div>
 
-                {timeLeft > 0 && (
-                  <div style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '0.5rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.85rem', color: '#fca5a5' }}>
-                    ⏱️ Bạn đang giữ vé trong: <strong>{formatTime(timeLeft)}</strong>
-                  </div>
-                )}
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
+                  Tổng: <strong style={{ color: 'var(--accent)', fontSize: '1rem' }}>{(event.price * quantity).toLocaleString()} VNĐ</strong>
+                </div>
 
                 <button
                   className="btn-primary-tp"
-                  style={{ width: '100%', justifyContent: 'center', fontSize: '1rem', padding: '0.85rem' }}
+                  style={{ width: '100%', justifyContent: 'center', fontSize: '1rem', padding: '0.85rem', opacity: loading ? 0.7 : 1 }}
                   onClick={handleBookTicket}
-                  disabled={event.availableTickets === 0}
+                  disabled={event.availableTickets === 0 || loading}
                 >
-                  {event.availableTickets === 0 ? '🚫 Hết Vé' : '🎟️ Đặt Vé Ngay'}
+                  {event.availableTickets === 0 ? '🚫 Hết Vé' : loading ? '⏳ Đang xử lý...' : '🎟️ Đặt Vé Ngay'}
                 </button>
 
                 <button

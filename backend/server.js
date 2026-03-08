@@ -33,11 +33,8 @@ app.use('/api/payment', paymentRoutes);
 // Cho phép truy cập thư mục 'uploads' để lấy ảnh sự kiện
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Đăng ký Route cho User (nếu có)
 app.use('/api/users', require('./src/routes/user.route'));
 app.use('/api/ai', require('./src/routes/ai.route'));
-// Kích hoạt Cron Job giữ vé
-require('./src/jobs/reservationExpiry');
 
 const PORT = 5000;
 app.listen(PORT, () => {
