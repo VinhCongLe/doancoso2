@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { fetchEvents } from '../services/api';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 // Swiper imports 
@@ -12,6 +12,9 @@ import 'swiper/css/pagination';
 
 const Home = () => {
   const [events, setEvents] = useState([]);
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const searchTerm = searchParams.get('q') || '';
 
   useEffect(() => {
     fetchEvents()
@@ -55,6 +58,12 @@ const Home = () => {
     d.setHours(0, 0, 0, 0);
     return d > currentDate;
   });
+
+  // 4. Search Results 
+  const filteredEvents = events.filter(e =>
+    e.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (e.categoryId && e.categoryId.name && e.categoryId.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   /* ── Reusable Event Card Component ── */
   const EventCard = ({ event }) => {
@@ -170,90 +179,128 @@ const Home = () => {
   return (
     <div className="home-page">
 
-      {/* 1. HERO / FEATURED EVENTS CAROUSEL */}
-      {heroEvents.length > 0 && (
-        <div className="hero-carousel-wrapper">
-          <Swiper
-            modules={[Autoplay, Pagination, Navigation]}
-            slidesPerView={1}
-            loop={heroEvents.length > 1}
-            autoplay={{ delay: 6000, disableOnInteraction: false }}
-            pagination={{ clickable: true, dynamicBullets: true }}
-            className="hero-swiper"
-          >
-            {heroEvents.map((event) => (
-              <SwiperSlide key={event._id}>
-                <div className="hero-section">
-                  {event.banner ? (
-                    <img src={`http://localhost:5000${event.banner}`} alt={event.title} className="hero-img" />
-                  ) : (
-                    <div className="hero-img" style={{ background: 'var(--bg-surface)' }} />
-                  )}
 
-                  <div className="hero-overlay">
-                    <div className="hero-content">
-                      <span className="hero-badge">🔥 SỰ KIỆN NỔI BẬT</span>
-                      <h1 className="hero-title">{event.title}</h1>
+      {/* ── CONDITIONAL RENDERING: SEARCH RESULTS VS HOME VIEW ── */}
+      {searchTerm.trim() !== '' ? (
+        <div style={{ padding: '0 1rem 4rem', maxWidth: '1200px', margin: '0 auto' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+            Kết quả tìm kiếm cho "{searchTerm}"
+          </h2>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
+            Tìm thấy {filteredEvents.length} sự kiện
+          </p>
 
-                      <div className="hero-details">
-                        <span className="hero-detail-item">
-                          <svg className="hero-icon" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                          </svg>
-                          {formatDateString(event.startDate)}
-                        </span>
-                        <span className="hero-detail-item">
-                          <svg className="hero-icon" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                          </svg>
-                          {event.location}
-                        </span>
-                        <span className="hero-detail-item">
-                          <span className="hero-cat-pill">
-                            {event.category}
-                          </span>
-                        </span>
-                      </div>
+          {filteredEvents.length > 0 ? (
+            <div className="search-results-grid">
+              {filteredEvents.map(ev => (
+                <EventCard key={ev._id} event={ev} />
+              ))}
+            </div>
+          ) : (
+            <div className="search-results-empty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" style={{ width: '64px', height: '64px', margin: '0 auto 1rem', opacity: 0.5 }}>
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <h3 style={{ fontSize: '1.2rem', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Không tìm thấy sự kiện nào</h3>
+              <p>Vui lòng thử lại với từ khóa khác.</p>
+              <Link
+                to="/"
+                style={{ display: 'inline-block', marginTop: '1rem', padding: '0.5rem 1.5rem', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', textDecoration: 'none' }}
+              >
+                Xóa tìm kiếm
+              </Link>
+            </div>
+          )}
+        </div>
+      ) : (
+        <>
+          {/* 1. HERO / FEATURED EVENTS CAROUSEL */}
+          {heroEvents.length > 0 && (
+            <div className="hero-carousel-wrapper">
+              <Swiper
+                modules={[Autoplay, Pagination, Navigation]}
+                slidesPerView={1}
+                loop={heroEvents.length > 1}
+                autoplay={{ delay: 6000, disableOnInteraction: false }}
+                pagination={{ clickable: true, dynamicBullets: true }}
+                className="hero-swiper"
+              >
+                {heroEvents.map((event) => (
+                  <SwiperSlide key={event._id}>
+                    <div className="hero-section">
+                      {event.banner ? (
+                        <img src={`http://localhost:5000${event.banner}`} alt={event.title} className="hero-img" />
+                      ) : (
+                        <div className="hero-img" style={{ background: 'var(--bg-surface)' }} />
+                      )}
 
-                      <div className="hero-actions">
-                        <div className="hero-price">{formatPrice(event.price)}</div>
-                        <Link to={`/event/${event._id}`} className="hero-btn">
-                          Mua Vé Ngay
-                          <svg className="hero-icon" style={{ marginLeft: '0.5rem' }} viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                          </svg>
-                        </Link>
+                      <div className="hero-overlay">
+                        <div className="hero-content">
+                          <span className="hero-badge">🔥 SỰ KIỆN NỔI BẬT</span>
+                          <h1 className="hero-title">{event.title}</h1>
+
+                          <div className="hero-details">
+                            <span className="hero-detail-item">
+                              <svg className="hero-icon" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                              </svg>
+                              {formatDateString(event.startDate)}
+                            </span>
+                            <span className="hero-detail-item">
+                              <svg className="hero-icon" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                              </svg>
+                              {event.location}
+                            </span>
+                            <span className="hero-detail-item">
+                              <span className="hero-cat-pill">
+                                {event.category}
+                              </span>
+                            </span>
+                          </div>
+
+                          <div className="hero-actions">
+                            <div className="hero-price">{formatPrice(event.price)}</div>
+                            <Link to={`/event/${event._id}`} className="hero-btn">
+                              Mua Vé Ngay
+                              <svg className="hero-icon" style={{ marginLeft: '0.5rem' }} viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                              </svg>
+                            </Link>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
+          )}
+
+          <div style={{ padding: '2rem 0' }}>
+
+            {/* 2. SỰ KIỆN ĐANG DIỄN RA (CAROUSEL) */}
+            <div style={{ marginBottom: '4rem' }}>
+              <EventCarousel
+                title="Sự Kiện Đang Diễn Ra"
+                subtitle="Khám phá và đặt vé cho những sự kiện hot nhất đang diễn ra hôm nay"
+                eventList={ongoingEvents}
+              />
+            </div>
+
+            {/* 3. SỰ KIỆN SẮP DIỄN RA (CAROUSEL) */}
+            <div style={{ marginBottom: '4rem' }}>
+              <EventCarousel
+                title="Sự Kiện Sắp Diễn Ra"
+                subtitle="Chuẩn bị trọn vẹn sẵn sàng cho những sự kiện bùng nổ sắp tới"
+                eventList={upcomingEvents}
+              />
+            </div>
+
+          </div>
+        </>
       )}
-
-      <div style={{ padding: '2rem 0' }}>
-
-        {/* 2. SỰ KIỆN ĐANG DIỄN RA (CAROUSEL) */}
-        <div style={{ marginBottom: '4rem' }}>
-          <EventCarousel
-            title="Sự Kiện Đang Diễn Ra"
-            subtitle="Khám phá và đặt vé cho những sự kiện hot nhất đang diễn ra hôm nay"
-            eventList={ongoingEvents}
-          />
-        </div>
-
-        {/* 3. SỰ KIỆN SẮP DIỄN RA (CAROUSEL) */}
-        <div style={{ marginBottom: '4rem' }}>
-          <EventCarousel
-            title="Sự Kiện Sắp Diễn Ra"
-            subtitle="Chuẩn bị trọn vẹn sẵn sàng cho những sự kiện bùng nổ sắp tới"
-            eventList={upcomingEvents}
-          />
-        </div>
-
-      </div>
     </div>
   );
 };

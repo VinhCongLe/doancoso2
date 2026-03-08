@@ -25,7 +25,7 @@ const authRoutes = require('./src/routes/auth.route');
 const ticketRoutes = require('./src/routes/ticket.route');
 const paymentRoutes = require('./src/routes/payment.route');
 
-// BẠN CẦN THÊM 2 DÒNG NÀY ĐỂ KÍCH HOẠT ĐƯỜNG DẪN:
+
 app.use('/api/auth', authRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/payment', paymentRoutes);
